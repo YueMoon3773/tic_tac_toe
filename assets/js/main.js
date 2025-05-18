@@ -75,7 +75,7 @@ const gameBoard = () => {
             }
         }
     };
-    // createGameBoard();
+    createGameBoard();
 
     const getGameBoard = () => board;
 
@@ -218,6 +218,10 @@ const controlPlayers = (playerLeftName = 'Player 1', playerRightName = 'Player 2
     };
 
     const getPlayerWinRoundCount = (activePlayerIndex) => {
+        // console.log(activePlayerIndex);
+
+        // console.log(getAllPlayers()[activePlayerIndex]);
+
         return getAllPlayers()[activePlayerIndex].winRoundCount;
     };
 
@@ -228,7 +232,10 @@ const controlPlayers = (playerLeftName = 'Player 1', playerRightName = 'Player 2
     };
 
     const resetAllPlayersValue = () => {
-        players = [...initialPlayers];
+        getAllPlayers()[0].movesList = [];
+        getAllPlayers()[1].movesList = [];
+        getAllPlayers()[0].winRoundCount = 0;
+        getAllPlayers()[1].winRoundCount = 0;
     };
 
     return {
@@ -289,10 +296,15 @@ const controlGamePlay = () => {
     const getActivePlayer = () => activePlayer;
     const getActivePlayerIndex = () => activePlayerIndex;
 
+    const resetActivePlayer = () => {
+        activePlayerIndex = 0;
+        activePlayer = players.getAllPlayers()[0];
+    };
+
     // print new game board
     const newGameRound = () => {
         board.createGameBoard();
-        board.printGameBoard();
+        // board.printGameBoard();
     };
 
     // verify if active player wins
@@ -338,6 +350,7 @@ const controlGamePlay = () => {
     // if yes remove it from available move list
     const validateAndUpdateCurrentAvailableMoves = (availableMoves, playerMove) => {
         // console.log('before: ', availableMoves);
+
         if (availableMoves.includes(playerMove)) {
             let playerMoveIndexInList = availableMoves.indexOf(playerMove);
             availableMoves.splice(playerMoveIndexInList, 1);
@@ -356,7 +369,7 @@ const controlGamePlay = () => {
     const gamePlayHandler = (cardIndexInDOM) => {
         let availableMoves = getAvailableMoves();
 
-        if (validateAndUpdateCurrentAvailableMoves(availableMoves, cardIndexInDOM)) {
+        if (validateAndUpdateCurrentAvailableMoves(availableMoves, Number(cardIndexInDOM))) {
             let activePlayerWinState = false;
             let isDraw = false;
             let activePlayerName = players.getPlayerName(getActivePlayerIndex());
@@ -364,15 +377,13 @@ const controlGamePlay = () => {
             let activePlayerMoves = players.getPlayerMoves(getActivePlayerIndex());
 
             // console.log(`${getActivePlayer().name}'s turn`);
-            console.log(`${activePlayerName} plays ${activePlayerTokenValue} at ${cardIndexInDOM}`);
+            // console.log(`${activePlayerName} plays ${activePlayerTokenValue} at ${Number(cardIndexInDOM)}`);
 
-            board.fillBoardCardWithPlayerValue(cardIndexInDOM, getActivePlayer().playerTokenValue);
-            players.updatePlayerMoves(getActivePlayerIndex(), cardIndexInDOM);
-            board.printGameBoard();
+            board.fillBoardCardWithPlayerValue(Number(cardIndexInDOM), getActivePlayer().playerTokenValue);
+            players.updatePlayerMoves(getActivePlayerIndex(), Number(cardIndexInDOM));
+            // board.printGameBoard();
 
-            console.log(`${activePlayerName}'s move list: ${activePlayerMoves}`);
-
-            // console.log(activePlayerMoves);
+            // console.log(`${activePlayerName}'s move list: ${activePlayerMoves}`);
 
             if (activePlayerMoves.length > 2) {
                 // console.log(`Checking ${activePlayerName} win state...`);
@@ -382,35 +393,47 @@ const controlGamePlay = () => {
             isDraw = checkDraw();
 
             if (isDraw && !activePlayerWinState) {
-                console.log('Draw!');
-                console.log(players.getAllPlayers());
+                // console.log('Draw!');
+                // console.log(players.getAllPlayers());
+                switchActivePlayer();
                 console.log('Start new game');
                 increaseRoundCount();
                 players.resetAllPlayersMoves();
                 resetAvailableMoves();
                 newGameRound();
+                return 'Draw!';
             } else if (!isDraw && !activePlayerWinState) {
                 switchActivePlayer();
+                return 'continue';
             } else if (activePlayer) {
-                console.log(`${activePlayerName} wins`);
+                // console.log(`${activePlayerName} wins`);
                 players.increasePlayerWinRoundCount(getActivePlayerIndex());
-                console.log(players.getAllPlayers());
+                switchActivePlayer();
+                // console.log(players.getAllPlayers());
                 console.log('Start new game');
                 increaseRoundCount();
                 players.resetAllPlayersMoves();
                 resetAvailableMoves();
                 newGameRound();
-                // return;
+                return `${activePlayerName} wins`;
             }
         } else {
-            return;
+            return 'stop';
         }
     };
 
     const restartGame = () => {
         players.resetAllPlayersValue();
+        resetActivePlayer();
+        resetAvailableMoves();
         resetRoundCount();
         newGameRound();
+    };
+
+    // newGameRound();
+
+    const getPlayerWinRound = (activePlayerIndex) => {
+        return players.getPlayerWinRoundCount(activePlayerIndex);
     };
 
     return {
@@ -419,7 +442,7 @@ const controlGamePlay = () => {
         gamePlayHandler,
         restartGame,
         getRoundCount,
-        // getGameBoardSize: board.getGameBoardSize,
+        getPlayerWinRound,
         getGameBoard: board.getGameBoard,
         createGameBoard: board.createGameBoard,
     };
@@ -484,6 +507,9 @@ const screenHandler = () => {
     const filterWrapper = document.querySelector('.filter');
     const filterSideLeft = document.querySelector('.filterSideLeft');
     const filterSideRight = document.querySelector('.filterSideRight');
+
+    const announceWrapper = document.querySelector('.announce');
+    const announceText = document.querySelector('.announceText');
 
     // game play control elements
     const game = controlGamePlay();
@@ -620,22 +646,60 @@ const screenHandler = () => {
             gamePlay.classList.add('active');
             filterWrapper.classList.add('active');
         }
+
+        updatePlayerStylesBasedOnType();
     };
     startBtn.addEventListener('click', () => {
         startBtnHandler();
     });
 
-    const gameCardClickHandler = (cardIndex) => {
-        console.log(`card number ${cardIndex} click`);
+    const updatePlayerStylesBasedOnType = () => {
+        playerLeft.classList.add(`${getPlayerInfo(0).type}`);
+        if (getPlayerInfo(0).level !== '') {
+            playerLeft.classList.add(`${getPlayerInfo(0).level}`);
+        }
+        playerRight.classList.add(`${getPlayerInfo(1).type}`);
+        if (getPlayerInfo(1).level !== '') {
+            playerRight.classList.add(`${getPlayerInfo(1).level}`);
+        }
     };
 
-    const updateGamePlayScreen = () => {
+    const resetPlayerStyles = () => {
+        playerLeft.classList.remove(`${getPlayerInfo(0).type}`);
+        if (getPlayerInfo(0).level !== '') {
+            playerLeft.classList.remove(`${getPlayerInfo(0).level}`);
+        }
+        playerRight.classList.remove(`${getPlayerInfo(1).type}`);
+        if (getPlayerInfo(1).level !== '') {
+            playerRight.classList.remove(`${getPlayerInfo(1).level}`);
+        }
+    };
+
+    const announceGamePlayResult = (gamePlayResult) => {
+        console.log(gamePlayResult);
+
+        announceText.textContent = `${gamePlayResult}`;
+        if (!announceWrapper.classList.contains('active')) {
+            announceWrapper.classList.add('active');
+        }
+        setTimeout(() => {
+            announceText.textContent = '';
+            announceWrapper.classList.remove('active');
+            handleGamePlayScreen();
+        }, 2600);
+    };
+
+    const startGamePlayScreen = () => {
         // clear game board display
         gameDisplay.textContent = '';
 
         game.createGameBoard();
+        game.newGameRound();
         const gameBoardOnScreen = game.getGameBoard();
         const activePlayer = game.getActivePlayer();
+        // console.log({ activePlayer });
+
+        roundNumberDisplay.textContent = game.getRoundCount();
 
         let tmpIndex = 0;
         gameBoardOnScreen.forEach((row) => {
@@ -643,7 +707,7 @@ const screenHandler = () => {
                 const gameCard = document.createElement('div');
                 gameCard.classList.add('gameCard');
                 gameCard.dataset.index = tmpIndex;
-                gameCard.dataset.value = '';
+                gameCard.dataset.value = gameCardOnRow.getCardValue();
                 gameCard.textContent = gameCardOnRow.getCardValue();
                 gameCard.addEventListener('click', () => {
                     gameCardClickHandler(gameCard.dataset.index);
@@ -654,10 +718,102 @@ const screenHandler = () => {
                 // console.log(tmpIndex);
             });
         });
+
+        // console.log('done update screen');
     };
 
     // initial render
-    updateGamePlayScreen();
+    startGamePlayScreen();
+
+    const handleGamePlayScreen = () => {
+        // clear game board display
+        gameDisplay.textContent = '';
+
+        const gameBoardOnScreen = game.getGameBoard();
+        const activePlayer = game.getActivePlayer();
+        // console.log({ activePlayer });
+
+        let activePlayerIndex = activePlayer.id;
+
+        // update and styling player info
+        if (activePlayerIndex === 0) {
+            playerLeft.classList.add('active');
+            playerRight.classList.remove('active');
+
+            filterSideLeft.classList.add('active');
+            filterSideRight.classList.remove('active');
+        } else if (activePlayerIndex === 1) {
+            playerLeft.classList.remove('active');
+            playerRight.classList.add('active');
+
+            filterSideLeft.classList.remove('active');
+            filterSideRight.classList.add('active');
+        }
+
+        roundNumberDisplay.textContent = game.getRoundCount();
+        playerLeftScore.textContent = `${game.getPlayerWinRound(0)}`;
+        playerRightScore.textContent = `${game.getPlayerWinRound(1)}`;
+
+        let tmpIndex = 0;
+        gameBoardOnScreen.forEach((row) => {
+            row.forEach((gameCardOnRow) => {
+                const gameCard = document.createElement('div');
+                gameCard.classList.add('gameCard');
+                gameCard.dataset.index = tmpIndex;
+                gameCard.dataset.value = gameCardOnRow.getCardValue();
+                gameCard.textContent = gameCardOnRow.getCardValue();
+                gameCard.addEventListener('click', () => {
+                    gameCardClickHandler(gameCard.dataset.index);
+                });
+                gameDisplay.appendChild(gameCard);
+
+                tmpIndex++;
+                // console.log(tmpIndex);
+            });
+        });
+
+        // console.log('done update screen');
+    };
+
+    const gameCardClickHandler = (cardIndex) => {
+        // console.log(`card number ${cardIndex} click`);
+        let gamePlayResult = game.gamePlayHandler(cardIndex);
+        handleGamePlayScreen();
+        // console.log(gamePlayResult);
+
+        if (gamePlayResult === 'continue') {
+            handleGamePlayScreen();
+        } else if (gamePlayResult === 'stop') {
+        } else {
+            announceGamePlayResult(gamePlayResult);
+        }
+    };
+
+    const restartBtnHandler = () => {
+        game.restartGame();
+        handleGamePlayScreen();
+    };
+    restartBtn.addEventListener('click', () => {
+        restartBtnHandler();
+    });
+
+    const exitBtnHandler = () => {
+        game.restartGame();
+        handleGamePlayScreen();
+        resetPlayerStyles();
+
+        if (!gameSelection.classList.contains('active') && !gameSelectionController.classList.contains('active')) {
+            gameSelectionController.classList.add('active');
+            gameSelection.classList.add('active');
+
+            gamePlayController.classList.remove('active');
+            gamePlay.classList.remove('active');
+            filterWrapper.classList.remove('active');
+        }
+    };
+    exitBtn.addEventListener('click', () => {
+        exitBtnHandler();
+    });
 };
 
 screenHandler();

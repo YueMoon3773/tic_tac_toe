@@ -32,6 +32,9 @@
 
     --bottom_bg_color: rgba(236, 236, 236, 0.36);
     --bottom_bg_hover_color: rgba(236, 236, 236, 0.6);
+
+    --announce_bg_color: rgba(48, 48, 48, 0.86);
+    --text_glow_yellow: rgba(245, 240, 148, 0.86);
 }
 
 svg {
@@ -309,16 +312,16 @@ body {
     transition-duration: 660ms;
 }
 
-.playerRight {
+.playerLeft {
     grid-column: 1 / 2;
 }
 
-.playerLeft {
+.playerRight {
     grid-column: 3 / -1;
 }
 
-.playerRight,
-.playerLeft {
+.playerLeft,
+.playerRight {
     font-size: 1rem;
     display: flex;
     flex-direction: column;
@@ -330,7 +333,7 @@ body {
 .playerName,
 .playerScore,
 .score {
-    color: var(--white_text);
+    color: var(--bottom_bg_color);
     text-shadow: 0 0 1em rgba(0, 0, 0, 0.6);
 }
 
@@ -339,7 +342,7 @@ body {
 .playerLeft.active > *,
 .playerLeft.active > * > * {
     color: var(--white_color);
-    text-shadow: 0 0 0.46em rgba(245, 240, 148, 0.86);
+    text-shadow: 0 0 0.46em var(--text_glow_yellow);
 }
 
 .playerName {
@@ -545,4 +548,57 @@ body {
     position: absolute;
     inset: 0;
     background: linear-gradient(to left, rgba(0, 0, 0, 0.66), transparent);
+}
+
+/* ==================================================== */
+/* ANNOUNCE SETUP */
+/* ==================================================== */
+.announce {
+    position: absolute;
+
+    animation: dropDownAppear 460ms ease;
+
+    display: none;
+    z-index: 20;
+}
+
+.announce.active {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    /* animation: dropDownVanish 460ms ease; */
+    background-color: var(--announce_bg_color);
+}
+
+.announceText {
+    font-size: 9rem;
+    font-weight: 900;
+    font-family: 'Anta', 'Roboto', sans-serif;
+    color: var(--white_text);
+    text-shadow: 0 0 0.6em var(--text_glow_yellow);
+
+    cursor: default;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.announceText:hover {
+    color: var(--white_color);
+    text-shadow: 0 0 1em var(--text_glow_yellow);
+}
+
+@keyframes dropDownAppear {
+    from {
+        transform: translateY(-100vh);
+        display: none;
+    }
+    to {
+        transform: translateY(0);
+        display: flex;
+    }
 }
