@@ -107,8 +107,7 @@ body {
     transition-duration: 660ms;
 }
 
-.gameSelectionController.active,
-.gamePlayController.active {
+.gameSelectionController.active {
     font-size: 1rem;
     display: flex;
     align-items: center;
@@ -116,9 +115,16 @@ body {
     gap: 4em;
 }
 
+.gamePlayController.active {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+}
+
 .startBtn,
 .restartBtn,
 .exitBtn {
+    place-self: center;
     font-size: 2.6rem;
     font-weight: 900;
     padding: 0.46em 0.8em;
@@ -158,6 +164,7 @@ body {
 }
 
 .roundWrapper {
+    place-self: center;
     font-size: 2.6rem;
     font-weight: 600;
     font-family: 'Anta', 'Roboto', sans-serif;

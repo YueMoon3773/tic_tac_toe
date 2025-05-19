@@ -84,16 +84,6 @@ const gameBoard = () => {
     };
 
     const fillBoardCardWithPlayerValue = (cardIndexInDOM, playerTokenValue) => {
-        // let cardRow, cardCol;
-        // let isCardAvailable;
-        // if (cardArrIndex) {
-        //     cardRow = cardArrIndex.row;
-        //     cardCol = cardArrIndex.col;
-        // } else if (cardIndexInDOM) {
-        //     cardRow = Math.floor(cardIndexInDOM / rows);
-        //     cardCol = cardIndexInDOM % columns;
-        // }
-
         const cardRow = Math.floor(cardIndexInDOM / rows);
         const cardCol = cardIndexInDOM % columns;
         // console.log({ cardRow, cardCol });
@@ -218,10 +208,6 @@ const controlPlayers = (playerLeftName = 'Player 1', playerRightName = 'Player 2
     };
 
     const getPlayerWinRoundCount = (activePlayerIndex) => {
-        // console.log(activePlayerIndex);
-
-        // console.log(getAllPlayers()[activePlayerIndex]);
-
         return getAllPlayers()[activePlayerIndex].winRoundCount;
     };
 
@@ -362,6 +348,7 @@ const controlGamePlay = () => {
     };
 
     const resetAvailableMoves = () => {
+        currentAvailableMoves = [];
         currentAvailableMoves = [...initialAvailableMoves()];
     };
 
@@ -386,7 +373,6 @@ const controlGamePlay = () => {
             // console.log(`${activePlayerName}'s move list: ${activePlayerMoves}`);
 
             if (activePlayerMoves.length > 2) {
-                // console.log(`Checking ${activePlayerName} win state...`);
                 activePlayerWinState = checkIfActivePlayerWins(getActivePlayerIndex());
             }
 
@@ -438,6 +424,7 @@ const controlGamePlay = () => {
 
     return {
         getActivePlayer,
+        getAvailableMoves,
         newGameRound,
         gamePlayHandler,
         restartGame,
@@ -474,12 +461,6 @@ const controlGamePlay = () => {
 // tgame.gamePlayHandler(2);
 // tgame.gamePlayHandler(8);
 // =================================
-
-// let tplayer = controlPlayers();
-// tplayer.updatePlayerMoves(0, 1);
-// tplayer.updatePlayerMoves(0, 4);
-// // console.log(tplayer.getPlayerTokenValue(0));
-// console.log(tplayer.getPlayerMoves(0));
 
 const screenHandler = () => {
     // DOM elements
@@ -633,7 +614,7 @@ const screenHandler = () => {
         let playerLeft = getPlayerInfo(0);
         let playerRight = getPlayerInfo(1);
 
-        console.log({ playerLeft, playerRight });
+        // console.log({ playerLeft, playerRight });
 
         if (
             Array.from(gameSelection.classList).includes('active') &&
@@ -731,7 +712,7 @@ const screenHandler = () => {
 
         const gameBoardOnScreen = game.getGameBoard();
         const activePlayer = game.getActivePlayer();
-        // console.log({ activePlayer });
+        console.log({ activePlayer });
 
         let activePlayerIndex = activePlayer.id;
 
@@ -777,12 +758,14 @@ const screenHandler = () => {
 
     const gameCardClickHandler = (cardIndex) => {
         // console.log(`card number ${cardIndex} click`);
+
         let gamePlayResult = game.gamePlayHandler(cardIndex);
-        handleGamePlayScreen();
+        // handleGamePlayScreen();
         // console.log(gamePlayResult);
 
         if (gamePlayResult === 'continue') {
             handleGamePlayScreen();
+            console.log(game.getAvailableMoves());
         } else if (gamePlayResult === 'stop') {
         } else {
             announceGamePlayResult(gamePlayResult);
@@ -791,6 +774,7 @@ const screenHandler = () => {
 
     const restartBtnHandler = () => {
         game.restartGame();
+        console.log(game.getAvailableMoves());
         handleGamePlayScreen();
     };
     restartBtn.addEventListener('click', () => {
